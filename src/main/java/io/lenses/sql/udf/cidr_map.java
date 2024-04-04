@@ -1,29 +1,32 @@
 package io.lenses.sql.udf;
 
+import io.lenses.sql.udf.UdfException;
+import io.lenses.sql.udf.UserDefinedFunction2;
 import io.lenses.sql.udf.datatype.DataType;
 import io.lenses.sql.udf.value.StringValue;
 import io.lenses.sql.udf.value.Value;
 import org.apache.commons.net.util.SubnetUtils;
 import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
 
-public class CidrMap implements UserDefinedFunction2 {
+public class cidr_map implements UserDefinedFunction2 {
 
     @Override
-    public DataType typeMapping(DataType... types) throws UdfException {
-        if (types.length != 2 || !types[0].isString() || !types[1].isString()) {
-            throw new UdfException("CidrMap function expects two string arguments: a CIDR range and an IP address.");
+    public DataType typeMapping(DataType dataType, DataType dataType1) throws UdfException {
+        if (!dataType.isString() || !dataType1.isString()) {
+            throw new UdfException("io.lenses.sql.cidr_map function expects two string arguments: a CIDR range and an IP address.");
         }
-        return DataType.BOOLEAN;
+        return DataType.ltBoolean();
+
     }
 
     @Override
-    public Value evaluate(Value... args) throws UdfException {
-        if (args.length != 2 || !(args[0] instanceof StringValue) || !(args[1] instanceof StringValue)) {
+    public Value evaluate(Value value, Value value1) throws UdfException {
+        if (!(value instanceof StringValue) || !(value1 instanceof StringValue)) {
             throw new UdfException("Invalid arguments. Expecting two strings: a CIDR range and an IP address.");
         }
 
-        String cidr = ((StringValue) args[0]).get();
-        String ip = ((StringValue) args[1]).get();
+        String cidr = ((StringValue) value).get();
+        String ip = ((StringValue) value1).get();
 
         boolean result = isIpInRange(cidr, ip);
         return new StringValue(String.valueOf(result));
@@ -42,12 +45,12 @@ public class CidrMap implements UserDefinedFunction2 {
 
     @Override
     public String name() {
-        return "cidrmap";
+        return "cidr_map";
     }
 
     @Override
     public String version() {
-        return "1.0";
+        return "1.0.0";
     }
 
     @Override
